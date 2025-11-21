@@ -254,7 +254,8 @@ namespace Stringification
                     // - Else if in air and hasn't double-jumped -> double jump
                     if (playerObject != null && playerRigidbody != null)
                     {
-                        if (IsGrounded())
+                        bool grounded = IsGrounded();
+                        if (grounded)
                         {
                             jump.PerformSingleJump(this, playerObject, playerRigidbody);
                         }
@@ -421,19 +422,26 @@ namespace Stringification
 
         private bool IsValidPlayer(CharacterMainControl cc)
         {
-            // 1. Root Name Check
-            if (cc.name.Contains("Dummy") || cc.name.Contains("AI")) return false;
-
-            // 2. Deep Check for AI indicators
-            // GetComponentsInChildren includes the parent and all children
-            foreach (var comp in cc.GetComponentsInChildren<MonoBehaviour>())
+            // Check for AI-related child objects to identify NPCs
+            // 通过检查 AI 相关的子对象来识别 NPC
+            // Root name is usually "Character" for both players and NPCs, so we check children instead
+            // Root 名称对于玩家和 NPC 通常都是 "Character"，所以我们检查子对象
+            
+            Transform[] allChildren = cc.GetComponentsInChildren<Transform>(true);
+            foreach (Transform child in allChildren)
             {
-                // Check Component Type
-                if (comp.GetType().Name.Contains("AIController")) return false;
-
-                // Check GameObject Name (e.g. "DummyAIController(Clone)")
-                if (comp.gameObject.name.Contains("DummyAIController") || comp.gameObject.name.Contains("PetAIController")) return false;
+                string childName = child.gameObject.name;
+                
+                // Exclude if contains AI controller identifiers
+                // 如果包含 AI 控制器标识符则排除
+                if (childName.Contains("AIController"))
+                {
+                    Debug.Log($"Stringification: Excluded '{cc.name}' due to AI child: {childName}");
+                    return false;
+                }
             }
+
+
 
             return true;
         }

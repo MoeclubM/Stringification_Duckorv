@@ -111,11 +111,11 @@ namespace Stringification.Components
                 // If we are just entering flight, we should capture the rotation?
                 // 如果我们刚刚进入飞行状态，我们应该捕捉旋转吗？
                 // But we want to maintain the "Paper Plane" orientation.
-                // 但我们想保持“纸飞机”的方向。
+                // 但我们想保持"纸飞机"的方向。
                 // If we lock world rotation, the plane won't turn visually.
                 // 如果我们锁定世界旋转，飞机在视觉上就不会转动。
                 
-                if (lastWorldRotation != Quaternion.identity && lastWorldRotation != new Quaternion(0,0,0,0))
+                if (lastWorldRotation != Quaternion.identity)
                 {
                     // We want to apply the Pitch to the Locked World Rotation.
                     // 我们想将俯仰角应用到锁定的世界旋转上。
@@ -189,7 +189,7 @@ namespace Stringification.Components
                 if (!isMoving)
                 {
                     // Idle: Lock world rotation
-                    if (lastWorldRotation != Quaternion.identity && lastWorldRotation != new Quaternion(0,0,0,0))
+                    if (lastWorldRotation != Quaternion.identity)
                     {
                         targetModel.rotation = lastWorldRotation;
                         if (damageReceiver != null) damageReceiver.rotation = lastWorldRotation;
