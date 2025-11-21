@@ -181,11 +181,16 @@ namespace Stringification
                 {
                     if (!groundedForToggle)
                     {
-                        // In-air toggle: switch between flight and normal stringification
+                        // In-air toggle: if currently flying, fully cancel stringification
+                        // (don't just switch to the non-flying "side-facing" stringified state)
                         if (flight.IsFlying)
                         {
+                            // Stop flight and exit stringification entirely
                             flight.StopFlight();
                             wasFlying = false;
+                            isStringified = false;
+                            visuals.SetStringified(false, true);
+                            Debug.Log("Stringification: Deactivated (cancelled from flight via toggle)");
                         }
                         else
                         {
@@ -231,7 +236,7 @@ namespace Stringification
                 if (isStringified || flight.IsFlying)
                 {
                     // Jump key during stringification cancels the state
-                    // 弦化或飞行期间按跳跃键将恢复正常状态
+                    // 弦化或飞行期间按跳跃键将恢复正常状态并尝试执行跳跃
                     if (flight.IsFlying)
                     {
                         flight.StopFlight();
@@ -243,6 +248,23 @@ namespace Stringification
                         visuals.SetStringified(false, true);
                         Debug.Log("Stringification: Cancelled via jump input");
                     }
+
+                    // Attempt to perform a jump after cancelling stringification:
+                    // - If grounded -> single jump
+                    // - Else if in air and hasn't double-jumped -> double jump
+                    if (playerObject != null && playerRigidbody != null)
+                    {
+                        if (IsGrounded())
+                        {
+                            jump.PerformSingleJump(this, playerObject, playerRigidbody);
+                        }
+                        else if (!hasDoubleJumped)
+                        {
+                            jump.PerformDoubleJump(this, playerObject, playerRigidbody);
+                            hasDoubleJumped = true;
+                        }
+                    }
+
                     lastJumpKeyPressTime = Time.time;
                     return;
                 }
@@ -268,15 +290,6 @@ namespace Stringification
                     }
                 }
                 lastJumpKeyPressTime = Time.time;
-            }
-
-            if (!isStringified)
-            {
-                // Even if not stringified, we might need to run LateUpdate for transition out
-                // But visuals.LateUpdate handles that if targetModel is set
-                // 即使未弦化，我们也可能需要运行 LateUpdate 进行过渡
-                // 但如果设置了 targetModel，visuals.LateUpdate 会处理它
-                return;
             }
         }
 
