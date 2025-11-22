@@ -1,0 +1,70 @@
+using UnityEngine;
+using Duckov.Modding;
+
+namespace Stringification.Components
+{
+    public class InputManager
+    {
+        public KeyCode ToggleKey { get; set; } = KeyCode.LeftControl;
+        public KeyCode JumpKey { get; set; } = KeyCode.X;
+        public float FlightActivationSpeed { get; set; } = 0.5f;
+
+        private float lastJumpKeyPressTime = 0f;
+        private bool hasDoubleJumped = false;
+
+        public void Reset()
+        {
+            hasDoubleJumped = false;
+            lastJumpKeyPressTime = 0f;
+        }
+
+        public void ResetDoubleJump()
+        {
+            hasDoubleJumped = false;
+        }
+
+        public bool CheckToggleInput()
+        {
+            return Input.GetKeyDown(ToggleKey);
+        }
+
+        public bool CheckJumpInput()
+        {
+            return Input.GetKeyDown(JumpKey);
+        }
+
+        public bool IsDoubleTap()
+        {
+            bool isDouble = Time.time - lastJumpKeyPressTime < 0.3f;
+            lastJumpKeyPressTime = Time.time;
+            return isDouble;
+        }
+
+        public bool CanDoubleJump(bool isGrounded)
+        {
+            if (!isGrounded && !hasDoubleJumped)
+            {
+                hasDoubleJumped = true;
+                return true;
+            }
+            return false;
+        }
+
+        public bool ShouldActivateFlight(Rigidbody rb)
+        {
+            if (rb == null) return false;
+            
+            Vector3 horizVel = new Vector3(rb.velocity.x, 0, rb.velocity.z);
+            if (horizVel.magnitude > FlightActivationSpeed)
+            {
+                return true;
+            }
+
+            float h = Input.GetAxis("Horizontal");
+            float v = Input.GetAxis("Vertical");
+            if (new Vector2(h, v).magnitude > 0.1f) return true;
+
+            return false;
+        }
+    }
+}
